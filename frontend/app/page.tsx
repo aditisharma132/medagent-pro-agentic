@@ -2,7 +2,6 @@
 import { useState } from 'react';
 
 export default function Dashboard() {
-    const [file, setFile] = useState<File | null>(null);
     const [status, setStatus] = useState<string>('Awaiting Input...');
     const [reasoning, setReasoning] = useState<string[]>([]);
 
