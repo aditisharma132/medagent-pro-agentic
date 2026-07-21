@@ -1,17 +1,35 @@
 'use client';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 
 export default function Dashboard() {
     const [status, setStatus] = useState<string>('Awaiting Input...');
     const [reasoning, setReasoning] = useState<string[]>([]);
+    const [patientData, setPatientData] = useState('');
+    const [fileName, setFileName] = useState<string | null>(null);
+
+    const fileInputRef = useRef<HTMLInputElement>(null);
+
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files.length > 0) {
+            setFileName(e.target.files[0].name);
+        }
+    };
 
     const handleSimulatedRun = () => {
+        if (!patientData && !fileName) {
+            setStatus('Error: Please provide inputs.');
+            return;
+        }
+
         setStatus('Planner Agent formulating strategy...');
+        setReasoning([]);
+
         setTimeout(() => {
             setReasoning(prev => [...prev, '[Planner] Generated clinical pathway based on guidelines.']);
             setStatus('Decider Agent evaluating image...');
             setTimeout(() => {
-                setReasoning(prev => [...prev, '[Decider] Called HF Tool: Segmentation. Detected lesion.']);
+                if (patientData) setReasoning(prev => [...prev, `[Decider] Analyzed history length: ${patientData.length} chars...`]);
+                if (fileName) setReasoning(prev => [...prev, `[Decider] Called HF Tool: Segmentation on scan ${fileName}.`]);
                 setStatus('Diagnosis Complete');
                 setReasoning(prev => [...prev, '[Decider] Final Diagnosis: High probability of Glaucoma.']);
             }, 2000);
@@ -41,13 +59,39 @@ export default function Dashboard() {
                     <div className="w-1/3 flex flex-col gap-6">
                         <div className="bg-gray-900/50 backdrop-blur-md border border-gray-800 p-6 rounded-2xl flex flex-col h-full shadow-xl">
                             <h2 className="text-xl font-semibold mb-4 text-gray-200">Patient Case</h2>
-                            <div className="border border-dashed border-gray-700 rounded-xl p-8 flex flex-col items-center justify-center text-gray-500 hover:border-blue-500 transition-colors cursor-pointer group mb-6">
+
+                            {/* Text Input */}
+                            <div className="mb-4">
+                                <label className="block text-sm font-medium text-gray-400 mb-2">Clinical Notes & Metadata</label>
+                                <textarea
+                                    value={patientData}
+                                    onChange={(e) => setPatientData(e.target.value)}
+                                    placeholder="Paste patient age, symptoms, history..."
+                                    className="w-full bg-gray-950 border border-gray-700 rounded-xl p-3 text-sm text-gray-200 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 resize-none h-32"
+                                />
+                            </div>
+
+                            {/* File Upload */}
+                            <label className="border border-dashed border-gray-700 rounded-xl p-6 flex flex-col items-center justify-center text-gray-500 hover:border-blue-500 hover:bg-gray-800/20 transition-colors cursor-pointer group mb-6">
+                                <input
+                                    type="file"
+                                    className="hidden"
+                                    ref={fileInputRef}
+                                    onChange={handleFileChange}
+                                    accept="image/*"
+                                />
                                 <div className="mb-3 p-3 bg-gray-800 rounded-full group-hover:bg-blue-900/50 transition-colors">
                                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-blue-400"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" /></svg>
                                 </div>
-                                <p className="text-sm">Drag & drop medical scan</p>
-                                <span className="text-xs text-gray-600 mt-2">DICOM, PNG, JPEG</span>
-                            </div>
+                                {fileName ? (
+                                    <p className="text-sm font-medium text-blue-400 text-center break-all">{fileName}</p>
+                                ) : (
+                                    <>
+                                        <p className="text-sm">Click to upload medical scan</p>
+                                        <span className="text-xs text-gray-600 mt-2">DICOM, PNG, JPEG</span>
+                                    </>
+                                )}
+                            </label>
 
                             <button
                                 onClick={handleSimulatedRun}
@@ -58,7 +102,7 @@ export default function Dashboard() {
                         </div>
                     </div>
 
-                    {/* Right panel: Agent Reasoning */}
+                    {/* Right panel: Agent Reasoning Feed */}
                     <div className="w-2/3 bg-gray-900/40 backdrop-blur-md border border-gray-800 p-6 rounded-2xl flex flex-col shadow-xl overflow-hidden">
                         <div className="flex justify-between items-center mb-6">
                             <h2 className="text-xl font-semibold text-gray-200">Agent Reasoning Feed</h2>
