@@ -1,17 +1,11 @@
-import google.generativeai as genai
+from google import genai
 import os
 
 class TaskPlanner:
     def __init__(self):
-        # Retrieve the API key from environment variables
-        api_key = os.getenv("GEMINI_API_KEY")
-        if api_key:
-            genai.configure(api_key=api_key)
-        else:
-            print("Warning: GEMINI_API_KEY environment variable not set.")
-            
-        # Using 1.5 Flash as it is fast and capable for planning text structures
-        self.model = genai.GenerativeModel('gemini-1.5-flash')
+        # Using Gemini 1.5 Flash for rapid, coherent planning as outlined in the paper replication
+        self.client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
+        self.model_id = 'gemini-1.5-flash'
 
     def generate_plan(self, clinical_guidelines: str, case_context: str) -> str:
         """
@@ -26,12 +20,13 @@ class TaskPlanner:
         And this metadata and context for a patient case:
         {case_context}
         
-        Generate a strict, step-by-step diagnostic plan that a Decider agent can execute.
-        Do not skip steps required by the guidelines. Ensure the plan includes what visual tools to use if needed.
+        Output a strict, logically ordered diagnostic plan mapping out the steps to take to confirm the diagnosis. Do not output anything other than the steps.
         """
-        
         try:
-            response = self.model.generate_content(prompt)
+            response = self.client.models.generate_content(
+                model=self.model_id,
+                contents=prompt
+            )
             return response.text
         except Exception as e:
             return f"Error generating plan: {str(e)}"

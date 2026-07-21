@@ -1,20 +1,15 @@
-import google.generativeai as genai
+from google import genai
 import os
 
 class CaseDecider:
     def __init__(self):
-        api_key = os.getenv("GEMINI_API_KEY")
-        if api_key:
-            genai.configure(api_key=api_key)
-        else:
-            print("Warning: GEMINI_API_KEY environment variable not set.")
-            
-        # For complex diagnostic decisions, 1.5 Pro is recommended
-        self.model = genai.GenerativeModel('gemini-1.5-pro')
+        # Using Gemini 1.5 Pro for advanced comparative reasoning
+        self.client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
+        self.model_id = 'gemini-1.5-pro'
 
     def decide_next_step(self, diagnostic_plan: str, current_state: str, tool_results: str) -> str:
         """
-        Executes the current step of the diagnostic plan, factoring in prior tool results.
+        Evaluates the current state and triggers either a visual tool action or finalizes the diagnosis.
         """
         prompt = f"""
         You are a medical decider agent executing a diagnostic plan.
@@ -25,15 +20,16 @@ class CaseDecider:
         Current State of Reasoning:
         {current_state}
         
-        Latest Tool Results (e.g. from vision models):
+        Latest Tool Results:
         {tool_results}
         
-        Based on the above, what is the next logical reasoning step? If all evidence has been gathered, output a final structured diagnosis. 
-        If more visual tools need to be called, specify which tools and what they should look for.
+        Analyze the current state and the tool results. Output your reasoning on what to do next. Output one clear conclusion at the end (e.g. Action required, Tool required, or Final Diagnosis).
         """
-        
         try:
-            response = self.model.generate_content(prompt)
+            response = self.client.models.generate_content(
+                model=self.model_id,
+                contents=prompt
+            )
             return response.text
         except Exception as e:
             return f"Error computing next step: {str(e)}"
