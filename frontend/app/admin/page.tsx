@@ -4,6 +4,9 @@ import { Users, Activity, ArrowLeft, ShieldCheck, Database, Plus } from 'lucide-
 import Link from 'next/link';
 
 export default function AdminPage() {
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const [passcode, setPasscode] = useState('');
+    const [authError, setAuthError] = useState(false);
     const [users, setUsers] = useState<any[]>([]);
     const [newEmail, setNewEmail] = useState('');
     const [status, setStatus] = useState('Fetching Database...');
@@ -38,6 +41,51 @@ export default function AdminPage() {
             console.error(e);
         }
     };
+
+    if (!isAuthenticated) {
+        return (
+            <div className="min-h-screen bg-black text-gray-100 flex items-center justify-center font-sans relative selection:bg-emerald-500/30 overflow-hidden">
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[40%] h-[40%] blur-[160px] rounded-full bg-emerald-900/20 pointer-events-none" />
+                <div className="z-10 bg-gray-900/60 border border-gray-800 p-10 rounded-[2.5rem] shadow-2xl backdrop-blur-3xl w-full max-w-md flex flex-col items-center">
+                    <div className="p-4 bg-emerald-900/30 rounded-2xl mb-6 shadow-inner">
+                        <ShieldCheck size={40} className="text-emerald-500" />
+                    </div>
+                    <h2 className="text-2xl font-bold mb-2">Admin Authentication</h2>
+                    <p className="text-gray-500 text-sm mb-8 text-center leading-relaxed">This portal is restricted to MedAgent-Pro administrators only.</p>
+                    <form
+                        onSubmit={(e) => {
+                            e.preventDefault();
+                            if (passcode === (process.env.NEXT_PUBLIC_ADMIN_PASSCODE || 'admin123')) {
+                                setIsAuthenticated(true);
+                            } else {
+                                setAuthError(true);
+                                setTimeout(() => setAuthError(false), 3000);
+                            }
+                        }}
+                        className="w-full flex flex-col gap-5"
+                    >
+                        <div className="relative">
+                            <input
+                                type="password"
+                                value={passcode}
+                                onChange={(e) => setPasscode(e.target.value)}
+                                className={`w-full bg-black/60 border rounded-2xl px-5 py-4 text-center tracking-widest text-xl font-mono focus:outline-none transition-colors shadow-inner ${authError ? 'border-red-500 focus:border-red-500 text-red-100' : 'border-gray-800 focus:border-emerald-500 text-white'}`}
+                                placeholder="••••••••"
+                                autoFocus
+                            />
+                            {authError && <p className="absolute -bottom-6 left-0 right-0 text-red-500 text-[10px] font-black text-center uppercase tracking-widest">Access Denied</p>}
+                        </div>
+                        <button type="submit" className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black px-4 py-4 rounded-[1.25rem] shadow-lg shadow-emerald-900/20 transition-all transform hover:scale-[1.02] active:scale-95 mt-2">
+                            Verify Identity
+                        </button>
+                    </form>
+                    <Link href="/" className="mt-8 text-xs text-gray-500 hover:text-gray-300 transition-colors flex items-center gap-2 font-bold uppercase tracking-wider">
+                        <ArrowLeft size={14} /> Return to Dashboard
+                    </Link>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-black text-gray-100 flex flex-col font-sans relative overflow-x-hidden selection:bg-blue-500/30">
