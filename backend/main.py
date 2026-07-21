@@ -53,3 +53,33 @@ async def execute_reasoning_step(
     # Evaluate current step and output either a tool call request or a conclusion
     decision = decider.decide_next_step(diagnostic_plan=plan, current_state=current_state, tool_results=tools_results)
     return {"status": "success", "agent": "Decider", "decision": decision}
+
+@app.post("/project-chat")
+async def project_chat(message: str = Form(...)):
+    prompt = f"""
+    You are the MedAgent-Pro Replication Assistant. 
+    Your ONLY purpose is to answer questions about this exact project's architecture, tools, and the paper.
+    
+    Project Context:
+    - This project replicates the 2026 ICLR MedAgent-Pro paper for evidence-based multi-modal diagnosis.
+    - Frontend: Next.js 14, React, Tailwind CSS, deployed on Vercel.
+    - Backend: Python 3.11 with FastAPI, Dockerized and deployed on Railway cloud.
+    - AI Engine: Google gemini-2.0-flash executing hierarchical agent loops (TaskPlanner & CaseDecider).
+    - Database: PostgreSQL (planned for admin credit-tracking).
+    - Vision: Hugging Face endpoints for synthetic visual segmentation tools.
+    
+    If the user asks general medical questions or anything unrelated to this platform's codebase or the MedAgent-Pro paper, refuse politely and say you can only discuss the project architecture. Keep responses very concise, highly technical, and professional.
+
+    User Question: {message}
+    """
+    
+    try:
+        from google import genai
+        client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
+        response = client.models.generate_content(
+            model='gemini-2.0-flash',
+            contents=prompt
+        )
+        return {"reply": response.text}
+    except Exception as e:
+        return {"reply": f"Documentation Service Offline: {str(e)}"}
