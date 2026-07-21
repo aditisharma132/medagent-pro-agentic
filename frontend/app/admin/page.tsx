@@ -24,7 +24,7 @@ export default function AdminPage() {
         fetchUsers();
     }, []);
 
-    const handleCreateUser = async (e: any) => {
+    const handleCreateUser = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         try {
             await fetch(`${apiUrl.replace(/\/$/, '')}/admin/create_user`, {
