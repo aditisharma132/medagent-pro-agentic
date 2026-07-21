@@ -5,7 +5,7 @@ class TaskPlanner:
     def __init__(self):
         # Using Gemini 1.5 Flash for rapid, coherent planning as outlined in the paper replication
         self.client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
-        self.model_id = 'gemini-2.5-flash'
+        self.model_id = 'gemini-2.0-flash'
 
     def generate_plan(self, clinical_guidelines: str, case_context: str) -> str:
         """
