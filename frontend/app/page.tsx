@@ -110,11 +110,8 @@ export default function Dashboard() {
                             {isDark ? <Sun size={20} /> : <Moon size={20} />}
                         </button>
 
-                        <Link href="/login" className={`flex items-center gap-2 px-3 py-2 font-semibold text-sm rounded-lg transition-all shadow-sm ${isDark ? 'bg-gray-800 hover:bg-gray-700 text-white' : 'bg-white border text-gray-700 hover:bg-gray-100 border-gray-300'}`}>
+                        <Link href="/login" className="flex items-center gap-2 px-4 py-2 font-semibold text-sm rounded-lg transition-all shadow-sm bg-blue-600 hover:bg-blue-500 text-white">
                             <LogIn size={16} /> Sign In
-                        </Link>
-                        <Link href="/signup" className={`flex items-center gap-2 px-3 py-2 font-semibold text-sm rounded-lg transition-all shadow-sm bg-blue-600 hover:bg-blue-500 text-white`}>
-                            <UserPlus size={16} /> Sign Up
                         </Link>
                         <Link href="/admin" className={`flex items-center gap-2 px-3 py-2 font-semibold text-sm rounded-lg transition-all shadow-sm ${isDark ? 'bg-gray-800 hover:bg-gray-700 text-white' : 'bg-white border text-gray-700 hover:bg-gray-100 border-gray-300 shadow-sm'}`}>
                             <Activity size={16} className="text-blue-500" /> Admin
