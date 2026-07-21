@@ -2,10 +2,11 @@
 import { useState, useRef } from 'react';
 
 export default function Dashboard() {
-    const [status, setStatus] = useState<string>('Awaiting Input...');
+    const [status, setStatus] = useState<string>('System Online');
     const [reasoning, setReasoning] = useState<string[]>([]);
     const [patientData, setPatientData] = useState('');
     const [fileName, setFileName] = useState<string | null>(null);
+    const [apiUrl, setApiUrl] = useState<string>('https://protective-emotion-production.up.railway.app'); // Update this dynamically to your real railway URL
 
     const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -15,7 +16,7 @@ export default function Dashboard() {
         }
     };
 
-    const handleSimulatedRun = () => {
+    const handleDiagnosticRun = async () => {
         if (!patientData && !fileName) {
             setStatus('Error: Please provide inputs.');
             return;
@@ -24,54 +25,96 @@ export default function Dashboard() {
         setStatus('Planner Agent formulating strategy...');
         setReasoning([]);
 
-        setTimeout(() => {
-            setReasoning(prev => [...prev, '[Planner] Generated clinical pathway based on guidelines.']);
-            setStatus('Decider Agent evaluating image...');
-            setTimeout(() => {
-                if (patientData) setReasoning(prev => [...prev, `[Decider] Analyzed history length: ${patientData.length} chars...`]);
-                if (fileName) setReasoning(prev => [...prev, `[Decider] Called HF Tool: Segmentation on scan ${fileName}.`]);
-                setStatus('Diagnosis Complete');
-                setReasoning(prev => [...prev, '[Decider] Final Diagnosis: High probability of Glaucoma.']);
-            }, 2000);
-        }, 2000);
+        try {
+            // 1. Call the Planner Agent via Backend
+            const formData = new FormData();
+            formData.append('case_context', patientData || "No data provided.");
+            formData.append('clinical_guidelines', ''); // We rely on the Planner's default Gemini logic or you can paste rules in the box!
+
+            const diagRes = await fetch(`${apiUrl.replace(/\/$/, '')}/diagnose`, {
+                method: "POST",
+                body: formData
+            });
+
+            if (!diagRes.ok) throw new Error(`Backend Error ${diagRes.status}`);
+
+            const diagData = await diagRes.json();
+
+            if (diagData.plan) {
+                setReasoning(prev => [...prev, `[Planner] ${diagData.plan}`]);
+                setStatus('Decider Agent evaluating step...');
+
+                // 2. Call the Decider Agent via Backend
+                const execFormData = new FormData();
+                execFormData.append('plan', diagData.plan);
+                execFormData.append('current_state', 'Initial evaluation of provided case data.');
+                execFormData.append('tools_results', fileName ? `Found attached visual scan metadata: ${fileName}` : 'No image provided.');
+
+                const execRes = await fetch(`${apiUrl.replace(/\/$/, '')}/execute_step`, {
+                    method: "POST",
+                    body: execFormData
+                });
+
+                if (!execRes.ok) throw new Error(`Backend Error ${execRes.status}`);
+
+                const execData = await execRes.json();
+
+                if (execData.decision) {
+                    setReasoning(prev => [...prev, `[Decider] ${execData.decision}`]);
+                    setStatus('Diagnosis Complete');
+                } else {
+                    setStatus('Error: Decider failed to output.');
+                }
+            }
+        } catch (err: any) {
+            console.error(err);
+            setStatus('Network Error.');
+            setReasoning(prev => [...prev, `[System Error] ${err.message}. Please ensure the Railway backend API URL is correct.`]);
+        }
     };
 
     return (
         <div className="flex min-h-screen bg-black overflow-hidden relative">
-            {/* Decorative Gradients */}
             <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-blue-900/30 blur-[150px] rounded-full pointer-events-none" />
             <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] bg-indigo-900/20 blur-[150px] rounded-full pointer-events-none" />
 
-            {/* Main Container */}
             <main className="z-10 flex flex-col w-full max-w-6xl mx-auto p-8 h-screen">
                 <header className="flex items-center justify-between py-6 border-b border-gray-800">
-                    <h1 className="text-3xl font-extrabold tracking-tight bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent">
-                        MedAgent-Pro
-                    </h1>
+                    <div>
+                        <h1 className="text-3xl font-extrabold tracking-tight bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent inline-block">
+                            MedAgent-Pro
+                        </h1>
+                        <div className="mt-2 flex items-center gap-2">
+                            <span className="text-xs text-gray-500">Backend API URL:</span>
+                            <input
+                                type="text"
+                                value={apiUrl}
+                                onChange={e => setApiUrl(e.target.value)}
+                                className="bg-gray-900 border border-gray-700 rounded px-2 py-1 text-xs text-gray-300 w-72 focus:outline-none focus:border-blue-500"
+                            />
+                        </div>
+                    </div>
                     <div className="flex items-center space-x-3">
                         <span className="flex h-3 w-3 rounded-full bg-emerald-500 animate-pulse"></span>
-                        <span className="text-sm font-medium text-gray-400">System Online</span>
+                        <span className="text-sm font-medium text-gray-400">{status}</span>
                     </div>
                 </header>
 
                 <div className="flex flex-1 gap-8 mt-8 overflow-hidden">
-                    {/* Left panel: Upload & Patient Data */}
                     <div className="w-1/3 flex flex-col gap-6">
                         <div className="bg-gray-900/50 backdrop-blur-md border border-gray-800 p-6 rounded-2xl flex flex-col h-full shadow-xl">
                             <h2 className="text-xl font-semibold mb-4 text-gray-200">Patient Case</h2>
 
-                            {/* Text Input */}
                             <div className="mb-4">
-                                <label className="block text-sm font-medium text-gray-400 mb-2">Clinical Notes & Metadata</label>
+                                <label className="block text-sm font-medium text-gray-400 mb-2">Clinical Context & Rules</label>
                                 <textarea
                                     value={patientData}
                                     onChange={(e) => setPatientData(e.target.value)}
-                                    placeholder="Paste patient age, symptoms, history..."
-                                    className="w-full bg-gray-950 border border-gray-700 rounded-xl p-3 text-sm text-gray-200 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 resize-none h-32"
+                                    placeholder="Paste patient data and clinical rules here..."
+                                    className="w-full bg-gray-950 border border-gray-700 rounded-xl p-3 text-sm text-gray-200 focus:outline-none focus:border-blue-500 resize-none h-48 custom-scrollbar"
                                 />
                             </div>
 
-                            {/* File Upload */}
                             <label className="border border-dashed border-gray-700 rounded-xl p-6 flex flex-col items-center justify-center text-gray-500 hover:border-blue-500 hover:bg-gray-800/20 transition-colors cursor-pointer group mb-6">
                                 <input
                                     type="file"
@@ -94,15 +137,12 @@ export default function Dashboard() {
                                         </button>
                                     </div>
                                 ) : (
-                                    <>
-                                        <p className="text-sm">Click to upload medical scan</p>
-                                        <span className="text-xs text-gray-600 mt-2">DICOM, PNG, JPEG</span>
-                                    </>
+                                    <p className="text-sm text-center">Click to attach scan</p>
                                 )}
                             </label>
 
                             <button
-                                onClick={handleSimulatedRun}
+                                onClick={handleDiagnosticRun}
                                 className="w-full mt-auto bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-medium py-3 px-4 rounded-xl shadow-lg shadow-blue-500/25 transition-all transform hover:scale-[1.02] active:scale-95"
                             >
                                 Run Diagnostic Agents
@@ -110,22 +150,21 @@ export default function Dashboard() {
                         </div>
                     </div>
 
-                    {/* Right panel: Agent Reasoning Feed */}
                     <div className="w-2/3 bg-gray-900/40 backdrop-blur-md border border-gray-800 p-6 rounded-2xl flex flex-col shadow-xl overflow-hidden">
                         <div className="flex justify-between items-center mb-6">
                             <h2 className="text-xl font-semibold text-gray-200">Agent Reasoning Feed</h2>
                             <span className="px-3 py-1 bg-gray-800 rounded-full text-xs font-mono text-blue-400">{status}</span>
                         </div>
 
-                        <div className="flex-1 overflow-y-auto space-y-4 pr-2">
+                        <div className="flex-1 overflow-y-auto space-y-4 pr-2 custom-scrollbar">
                             {reasoning.length === 0 ? (
                                 <div className="h-full flex items-center justify-center text-gray-600">
-                                    Pending agent execution...
+                                    Awaiting Execution...
                                 </div>
                             ) : (
                                 reasoning.map((log, idx) => (
-                                    <div key={idx} className="p-4 bg-gray-800/50 border border-gray-700/50 rounded-xl font-mono text-sm shadow-sm transition-all">
-                                        <span className="text-indigo-400 mr-2">&gt;</span> {log}
+                                    <div key={idx} className="p-4 bg-gray-800/50 border border-gray-700/50 rounded-xl font-mono text-sm shadow-sm transition-all whitespace-pre-wrap leading-relaxed">
+                                        <span className="text-indigo-400 mr-2 font-bold">&gt;</span> {log}
                                     </div>
                                 ))
                             )}
