@@ -268,6 +268,15 @@ export default function Dashboard() {
                                         <p>Deployed the heavy Python agent-orchestration engine (TaskPlanner & CaseDecider) entirely into a containerized Railway backend perfectly optimized for asynchronous AI streams.</p>
                                     </div>
                                 </li>
+                                <li className="flex items-start gap-4">
+                                    <div className={`p-3 rounded-xl mt-1 shrink-0 ${isDark ? 'bg-emerald-900/50' : 'bg-emerald-100'}`}>
+                                        <Activity size={24} className="text-emerald-500" />
+                                    </div>
+                                    <div>
+                                        <strong className={`block mb-1 text-lg ${isDark ? 'text-gray-200' : 'text-gray-800'}`}>Vercel Interactive UI</strong>
+                                        <p>Built this aesthetic, responsive Next.js 14 dashboard supporting live diagnostic streams, custom theming, and an upcoming SaaS authenticated credit-tracking backend.</p>
+                                    </div>
+                                </li>
                             </ul>
                         </div>
                     </div>
