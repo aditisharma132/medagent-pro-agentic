@@ -84,7 +84,15 @@ export default function Dashboard() {
                                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-blue-400"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" /></svg>
                                 </div>
                                 {fileName ? (
-                                    <p className="text-sm font-medium text-blue-400 text-center break-all">{fileName}</p>
+                                    <div className="flex flex-col items-center">
+                                        <p className="text-sm font-medium text-blue-400 text-center break-all">{fileName}</p>
+                                        <button
+                                            onClick={(e) => { e.preventDefault(); setFileName(null); if (fileInputRef.current) fileInputRef.current.value = ''; }}
+                                            className="mt-3 text-xs bg-red-900/40 text-red-300 px-3 py-1.5 rounded-lg border border-red-800/50 hover:bg-red-800/80 transition-colors z-20"
+                                        >
+                                            Remove Image
+                                        </button>
+                                    </div>
                                 ) : (
                                     <>
                                         <p className="text-sm">Click to upload medical scan</p>
@@ -116,7 +124,7 @@ export default function Dashboard() {
                                 </div>
                             ) : (
                                 reasoning.map((log, idx) => (
-                                    <div key={idx} className="p-4 bg-gray-800/50 border border-gray-700/50 rounded-xl font-mono text-sm shadow-sm transition-all animate-pulse">
+                                    <div key={idx} className="p-4 bg-gray-800/50 border border-gray-700/50 rounded-xl font-mono text-sm shadow-sm transition-all">
                                         <span className="text-indigo-400 mr-2">&gt;</span> {log}
                                     </div>
                                 ))
