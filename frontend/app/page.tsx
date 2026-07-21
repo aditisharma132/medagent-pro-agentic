@@ -243,7 +243,7 @@ export default function Dashboard() {
                                 This application is a full-stack, cloud-hosted replication of the architecture detailed in the 2026 ICLR paper <a href="https://arxiv.org/html/2503.18968v2" target="_blank" rel="noreferrer" className="text-blue-500 hover:underline font-bold inline-flex items-center transition-colors">MedAgent-Pro <ExternalLink size={16} className="ml-1" /></a>.
                             </p>
                             <p className={`leading-relaxed text-base ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-                                The original research introduced a hierarchical multi-modal AI system designed to solve complex medical reasoning tasks by dynamically generating diagnostic pathways and bridging pure language models with specialized visual interpretation tools. I engineered this project to prove that complex AI loops can be definitively deployed into highly scalable, enterprise web architectures specifically optimized for real-world clinical usage.
+                                The paper was published at ICLR 2026 to address a critical gap: standard text-based LLMs struggle with complex multi-modal medical diagnostics. What makes MedAgent-Pro unique is its hierarchical agentic workflow. It dynamically generates evidence-based diagnostic pathways by bridging pure language models with specialized toolsets (like medical image segmentation and visual-language reasoning). I engineered this project to prove that these sophisticated, multi-agent AI loops can be definitively deployed into highly scalable, enterprise web architectures specifically optimized for real-world clinical usage.
                             </p>
                         </div>
 
@@ -275,6 +275,15 @@ export default function Dashboard() {
                                     <div>
                                         <strong className={`block mb-1 text-lg ${isDark ? 'text-gray-200' : 'text-gray-800'}`}>Vercel Interactive UI</strong>
                                         <p>Built this aesthetic, responsive Next.js 14 dashboard supporting live diagnostic streams, custom theming, and an upcoming SaaS authenticated credit-tracking backend.</p>
+                                    </div>
+                                </li>
+                                <li className="flex items-start gap-4">
+                                    <div className={`p-3 rounded-xl mt-1 shrink-0 ${isDark ? 'bg-purple-900/50' : 'bg-purple-100'}`}>
+                                        <Database size={24} className="text-purple-500" />
+                                    </div>
+                                    <div>
+                                        <strong className={`block mb-1 text-lg ${isDark ? 'text-gray-200' : 'text-gray-800'}`}>PostgreSQL Database</strong>
+                                        <p>Integrated a robust PostgreSQL database to provide reliable, enterprise-grade storage for medical reasoning histories and patient context.</p>
                                     </div>
                                 </li>
                             </ul>
