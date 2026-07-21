@@ -2,6 +2,23 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer utilities {
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    /* IE and Edge */
+    scrollbar-width: none;
+    /* Firefox */
+  }
+}
+
 body {
-  @apply bg-gray-950 text-white min-h-screen selection:bg-blue-600;
+  @apply bg-gray-50 text-gray-900 scroll-smooth selection:bg-blue-600/30;
+}
+
+.dark body {
+  @apply bg-gray-950 text-gray-100;
 }
