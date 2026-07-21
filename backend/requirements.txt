@@ -1,6 +1,7 @@
 fastapi
-uvicorn==0.23.2
+uvicorn
 google-genai
-python-multipart==0.0.6env
+requests
+python-dotenv
 pydantic
 python-multipart
