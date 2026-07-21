@@ -5,7 +5,7 @@ class CaseDecider:
     def __init__(self):
         # Using Gemini 1.5 Pro for advanced comparative reasoning
         self.client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
-        self.model_id = 'gemini-1.5-pro'
+        self.model_id = 'gemini-2.5-pro'
 
     def decide_next_step(self, diagnostic_plan: str, current_state: str, tool_results: str) -> str:
         """
